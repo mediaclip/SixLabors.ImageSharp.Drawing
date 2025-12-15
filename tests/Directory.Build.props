@@ -20,4 +20,10 @@
     <UseImageSharp>true</UseImageSharp>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <RestoreSources>
+      $(RestoreSources);
+      https://mcpublicnugetstouse.blob.core.windows.net/imagesharp/index.json
+    </RestoreSources>
+  </PropertyGroup>
 </Project>

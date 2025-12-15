@@ -4,19 +4,13 @@ on:
   push:
     branches:
       - main
-      - release/*
-    tags:
-      - "v*"
-  pull_request:
-    branches:
-      - main
-      - release/*
-    types: [ labeled, opened, synchronize, reopened ]
 
 jobs:
   # Prime a single LFS cache and expose the exact key for the matrix
   WarmLFS:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       lfs_key: ${{ steps.expose-key.outputs.lfs_key }}
     steps:
@@ -60,6 +54,8 @@ jobs:
 
   Build:
     needs: WarmLFS
+    permissions:
+      contents: read
     strategy:
       matrix:
         isARM:
@@ -216,6 +212,9 @@ jobs:
           flags: unittests
 
   Publish:
+    permissions:
+      id-token: write  # Required for OIDC
+      contents: read
     needs: [Build]
     runs-on: ubuntu-latest
     if: (github.event_name == 'push')
@@ -243,19 +242,31 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets') }}
           restore-keys: ${{ runner.os }}-nuget-
 
+      - name: Compute Version
+        id: compute-version
+        shell: pwsh
+        run: |
+          $date = Get-Date -Format "yyyy.MM.dd"
+          $buildNumber = "${{ github.run_number }}"
+          $version = "$date-mc.$buildNumber"
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+          echo "Computed version: $version"
+
       - name: DotNet Pack
         shell: pwsh
-        run: ./ci-pack.ps1
+        run: ./ci-pack.ps1 -version "${{ steps.compute-version.outputs.version }}"
 
-      - name: Feedz Publish
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install Sleet
+        run: dotnet tool install -g sleet
+
+      - name: Publish Internal
         shell: pwsh
         run: |
-          dotnet nuget push .\artifacts\*.nupkg -k ${{secrets.FEEDZ_TOKEN}} -s https://f.feedz.io/sixlabors/sixlabors/nuget/index.json --skip-duplicate
-          dotnet nuget push .\artifacts\*.snupkg -k ${{secrets.FEEDZ_TOKEN}} -s https://f.feedz.io/sixlabors/sixlabors/symbols --skip-duplicate
-
-      - name: NuGet Publish
-        if: ${{ startsWith(github.ref, 'refs/tags/') }}
-        shell: pwsh
-        run: |
-          dotnet nuget push .\artifacts\*.nupkg -k ${{secrets.NUGET_TOKEN}} -s https://api.nuget.org/v3/index.json --skip-duplicate
-          dotnet nuget push .\artifacts\*.snupkg -k ${{secrets.NUGET_TOKEN}} -s https://api.nuget.org/v3/index.json --skip-duplicate
+          sleet push ./artifacts --config sleet.json artifacts
