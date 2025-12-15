@@ -1,0 +1,12 @@
+{
+  "username": "",
+  "useremail": "",
+  "sources": [
+    {
+      "name": "ImageSharp",
+      "type": "azure",
+      "container": "imagesharp",
+      "path": "https://mcpublicnugetstouse.blob.core.windows.net/imagesharp/"
+    }
+  ]
+}
