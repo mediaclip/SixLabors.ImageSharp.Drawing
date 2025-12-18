@@ -128,7 +128,7 @@ internal struct ArrayBuilder<T>
         }
     }
 
-    [MemberNotNull(nameof(this.data))]
+    [MemberNotNull(nameof(data))]
     private void Grow(int capacity)
     {
         // Same expansion algorithm as List<T>.

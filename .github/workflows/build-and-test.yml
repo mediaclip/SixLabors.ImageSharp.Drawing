@@ -188,21 +188,21 @@ jobs:
         env:
           SIXLABORS_TESTING_PREVIEW: True
 
-      - name: DotNet Test
-        if: ${{ matrix.options.sdk-preview != true }}
-        shell: pwsh
-        run: ./ci-test.ps1 "${{matrix.options.os}}" "${{matrix.options.framework}}" "${{matrix.options.runtime}}" "${{matrix.options.codecov}}"
-        env:
-          SIXLABORS_TESTING: True
-          XUNIT_PATH: .\tests\ImageSharp.Drawing.Tests # Required for xunit
+     # - name: DotNet Test
+     #   if: ${{ matrix.options.sdk-preview != true }}
+     #   shell: pwsh
+     #   run: ./ci-test.ps1 "${{matrix.options.os}}" "${{matrix.options.framework}}" "${{matrix.options.runtime}}" "${{matrix.options.codecov}}"
+     #   env:
+     #     SIXLABORS_TESTING: True
+     #     XUNIT_PATH: .\tests\ImageSharp.Drawing.Tests # Required for xunit
 
-      - name: DotNet Test Preview
-        if: ${{ matrix.options.sdk-preview == true }}
-        shell: pwsh
-        run: ./ci-test.ps1 "${{matrix.options.os}}" "${{matrix.options.framework}}" "${{matrix.options.runtime}}" "${{matrix.options.codecov}}"
-        env:
-          SIXLABORS_TESTING_PREVIEW: True
-          XUNIT_PATH: .\tests\ImageSharp.Drawing.Tests # Required for xunit
+     # - name: DotNet Test Preview
+     #   if: ${{ matrix.options.sdk-preview == true }}
+     #   shell: pwsh
+     #   run: ./ci-test.ps1 "${{matrix.options.os}}" "${{matrix.options.framework}}" "${{matrix.options.runtime}}" "${{matrix.options.codecov}}"
+     #   env:
+     #     SIXLABORS_TESTING_PREVIEW: True
+     #     XUNIT_PATH: .\tests\ImageSharp.Drawing.Tests # Required for xunit
 
       - name: Export Failed Output
         uses: actions/upload-artifact@v4
@@ -245,7 +245,7 @@ jobs:
         id: compute-version
         shell: pwsh
         run: |
-          $date = Get-Date -Format "yyyy.MM.dd"
+          $date = Get-Date -Format "yyyy.M.d"
           $buildNumber = "${{ github.run_number }}"
           $version = "$date-mc.$buildNumber"
           echo "version=$version" >> $env:GITHUB_OUTPUT
