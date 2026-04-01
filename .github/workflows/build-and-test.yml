@@ -277,3 +277,10 @@ jobs:
         shell: pwsh
         run: |
           sleet push ./artifacts --config sleet.json artifacts
+
+      - name: Publish Gitlab
+        run: |
+          dotnet nuget push ./artifacts/*.nupkg --source $GITLAB_FEED_URL --api-key $GITLAB_API_KEY
+        env:
+          GITLAB_FEED_URL: ${{ secrets.GITLAB_FEED_URL }}
+          GITLAB_API_KEY: ${{ secrets.GITLAB_API_KEY }}
